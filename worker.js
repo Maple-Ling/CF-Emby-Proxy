@@ -28,20 +28,33 @@ async function fetchWithTimeout(url, options, timeout) {
 app.all('*', async (c) => {
   const req = c.req.raw
   const url = new URL(req.url)
-  const host = url.hostname // 获取当前访问的子域名，例如 nayovo.maple521.ggff.net
+  const host = url.hostname 
 
-  // --- [核心升级：动态从 KV 读取对应 Emby 地址] ---
   let upstreamBase = CONFIG.DEFAULT_UPSTREAM;
+  let debugSource = "default";
+  
   try {
-    // 环境变量 EMBY_KV 需要在 Cloudflare Worker 设置中绑定
     if (c.env && c.env.EMBY_KV) {
-      const kvValue = await c.env.EMBY_KV.get(host);
+      // 尝试去掉可能存在的空格
+      const cleanHost = host.trim();
+      const kvValue = await c.env.EMBY_KV.get(cleanHost);
       if (kvValue) {
         upstreamBase = kvValue;
+        debugSource = "kv_hit";
+      } else {
+        debugSource = `kv_miss_for_${cleanHost}`;
       }
     }
   } catch (e) {
-    // KV 读取失败时回退到默认
+    debugSource = `kv_error_${e.message}`;
+  }
+
+  // 如果你访问时直接在响应头看到这个 debug 信息，就全破案了！
+  // 确认无误后再把这个调试头删掉
+  if (url.pathname === '/test-debug') {
+    return new Response(JSON.stringify({ host, debugSource, upstreamBase }), {
+      headers: { 'content-type': 'application/json' }
+    });
   }
 
   // 强制使用动态获取的目标地址回源
