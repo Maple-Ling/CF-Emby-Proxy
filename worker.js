@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 
 const CONFIG = {
-  DEFAULT_UPSTREAM: 'https://emby.bangumi.ca', // 当KV没读到时的兜底/默认地址
+  DEFAULT_UPSTREAM: 'https://www.baidu.com', // 当KV没读到时的兜底/默认地址
   STATIC_REGEX: /(\.(jpg|jpeg|png|gif|css|js|ico|svg|webp|woff|woff2)|(\/Images\/(Primary|Backdrop|Logo|Thumb|Banner|Art)))/i,
   VIDEO_REGEX: /(\/Videos\/|\/Items\/.*\/Download|\/Items\/.*\/Stream)/i,
   API_CACHE_REGEX: /(\/Items\/Resume|\/Users\/.*\/Items\/)/i,
